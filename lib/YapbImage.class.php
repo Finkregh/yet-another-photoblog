@@ -24,47 +24,47 @@
 
 	class YapbImage {
 
-		// Database fields 
+		// Database fields
 
 		/**
 		 * The id of the image
 		 * @var number id
-		 */		
+		 */
 		var $id = null;
-		
+
 		/**
-		 * The id of the post this image is belonging to 
+		 * The id of the post this image is belonging to
 		 * @var number
 		 */
 		var $post_id = null;
-		
+
 		/**
 		 * The internal URI of the image
 		 * @var string
 		 */
 		var $uri = '';
-		
+
 		/**
 		 * The width of the original image
 		 *
 		 * @var number >= 0
 		 */
 		var $width = 0;
-		
+
 		/**
 		 * The height of the original image
 		 *
 		 * @var number >=0
 		 */
 		var $height = 0;
-		
+
 		//
 		// private vars: Don't use them from outside
-		// 
+		//
 
 		/**
 		 * Internal thumb info cache
-		 * 
+		 *
 		 * @var array
 		 */
 		var $_thumbInfoCache = array();
@@ -74,7 +74,7 @@
 		 *
 		 * @param number $id the id of the image (null if this is a new instance not persisted to db yet)
 		 * @param number $post_id the id of the post this image is belonging to
-		 * @param string $uri the URI of the image 
+		 * @param string $uri the URI of the image
 		 * @return YapbImage
 		 */
 		function YapbImage($id=null, $post_id, $uri) {
@@ -86,9 +86,9 @@
 
 		/**
 		 * This method should be called statically
-		 * returns an YapbImage Object filled with the 
+		 * returns an YapbImage Object filled with the
 		 * fields of the DB row result
-		 * 
+		 *
 		 * @param ezSQL_row_object $rowObject
 		 * @return YapbImage
 		 * @static
@@ -101,7 +101,7 @@
 		 * This method should be called statically
 		 * It returns the image assigned
 		 * to the given post_id
-		 * 
+		 *
 		 * @param number $post_id
 		 * @return YapbImage
 		 * @static
@@ -121,7 +121,7 @@
 			} else {
 
 				return null;
-			
+
 			}
 
 		}
@@ -166,7 +166,7 @@
 			// trailing slashes from upload_path
 
 			if (substr($uri, 0, 1) == '/') { $uri = substr($uri, 1); }
-			if (substr($upload_path, strlen($upload_path)-1) == '/') { 
+			if (substr($upload_path, strlen($upload_path)-1) == '/') {
 				$upload_path = substr($upload_path, 0, strlen($upload_path)-1);
 			}
 
@@ -182,6 +182,10 @@
 				? YapbImage::_combinePaths($yapb_wp_root_dir, $upload_path)  // Absolute upload path
 				: $yapb_wp_root_dir . '/' . $upload_path;                    // Relative upload path
 
+			// Remove site sub folder so _combinePaths() will work
+
+			if (is_multisite()) $uri = strstr($uri, '/');
+
 			// Return result
 
 			return YapbImage::_combinePaths($full_path, $uri);
@@ -192,7 +196,7 @@
 			 * Workaround method for blogs with incorrect set DOCUMENT_ROOT:
 			 * This method tries to merge two partly identical paths to one
 			 *
-			 * Sample: 
+			 * Sample:
 			 *
 			 *   $first = '/srv/www/mydomain.com/htdocs/blog'
 			 *   $second = '/blog/wp-content/uploads/2008/12/hello.jpg'
@@ -215,7 +219,7 @@
 				$end_criterium = (strlen($first) > strlen($second))
 					? strlen($second)
 					: strlen($first);
-				
+
 				for ($i=1,$ilen=$end_criterium; $i<$ilen; $i++) {
 					$intersection_first = substr($first, strlen($first)-($i+1));
 					$intersection_second = substr($second, 0, $i+1);
@@ -232,7 +236,7 @@
 
 		/**
 		 * This method returns the HREF to the originally uploaded image
-		 * 
+		 *
 		 * @return string the href to the original image
 		 **/
 		function getFullHref() {
@@ -251,7 +255,7 @@
 		}
 
 		/**
-		 * This method returns the correct mimetype for thumbnails based on the chosen 
+		 * This method returns the correct mimetype for thumbnails based on the chosen
 		 * thumbnail image format
 		 **/
 		function getMimeTypeForThumbnail() {
@@ -272,7 +276,7 @@
 					case 'jpe':
 						return 'image/jpeg';
 						break;
-					case 'gif': 
+					case 'gif':
 						return 'image/gif';
 						break;
 					case 'png':
@@ -290,7 +294,7 @@
 			}
 
 		/**
-		 * This method returns the HREF to a thumbnail defined through 
+		 * This method returns the HREF to a thumbnail defined through
 		 * the given parameters array
 		 *
 		 * @param array $parameters provide the phpThumb parameters
@@ -312,14 +316,14 @@
 
 				// If the thumbnail doesn't exist yet, we return the path to the YapbThumbnailer script
 
-				$ampersand = 
+				$ampersand =
 					!is_null($xhtmlOverride)
-						? ($xhtmlOverride 
-							? '&' 
+						? ($xhtmlOverride
+							? '&'
 							: '&amp;'
 						)
-						: (get_option('yapb_display_images_xhtml') 
-							? '&amp;' 
+						: (get_option('yapb_display_images_xhtml')
+							? '&amp;'
 							: '&'
 						);
 
@@ -332,12 +336,12 @@
 				/**
 				 * This method unifies the list of given parameters
 				 * so we have a standardized format
-				 * 
+				 *
 				 * @param array $parameters
-				 * @return array an unified list of parameters 
+				 * @return array an unified list of parameters
 				 **/
 				function _getUnifiedParameters(&$parameters) {
-					
+
 					$result = array();
 
 					// This is the list of allowed phpThumb parameters
@@ -349,7 +353,7 @@
 
 					$temp = array();
 					$filters = array();
-					
+
 					for ($i=0, $len=count($parameters); $i<$len; $i++) {
 						preg_match('/([^=]+)=(.*)/', $parameters[$i], $match);
 						$key = $match[1];
@@ -379,66 +383,66 @@
 				 * This method generates the system-wide unique (as unique
 				 * as md5 hashes can be) identifier for a general thumbnail.
 				 * This identifier shouldn't include any filetype suffix.
-				 * 
-				 * JP 01012008: 
+				 *
+				 * JP 01012008:
 				 * The identifier now starts with the original filename (minus the suffix)
 				 * Special chars get replaced by an underscore
-				 * 
-				 * Notice: If we would want to change the general name-scheme, we 
+				 *
+				 * Notice: If we would want to change the general name-scheme, we
 				 * would do perform changes here.
-				 * 
+				 *
 				 * @param array $parameters
 				 * @return string the unique thumbnail identifier
 				 **/
 				function _getUniqueThumbnailIdentifier(&$parameters) {
-					
+
 					$unifiedParameters = $this->_getUnifiedParameters($parameters);
 
 					if (count($parameters) == 0); // $log->warn('no given parameters');
 					if (count($unifiedParameters) == 0); // $log->warn('no unified parameters');
-					
+
 					$debugTokens = array();
 					foreach ($unifiedParameters as $key => $value) {
 						$debugTokens[] = $key . ' = ' . $value;
 					}
-					
+
 					// SEO: We start thumbnail filenames with the original filename
 					// minus the filetype suffix
-					
+
 					$basename = basename($this->uri);
 					$basename = substr($basename, 0, strrpos($basename, '.'));
-					
+
 					// Additionial: Original filenames may be very odd names
 					// containing spaces and other special chars
 					// That's why i replace all chars i don't like
-					
+
 					$basename = strtolower(
 						preg_replace(
-							'/([^A-Za-z0-9_()])/', 
-							'_', 
+							'/([^A-Za-z0-9_()])/',
+							'_',
 							$basename
 						)
 					);
-					
+
 					// We return the beautiful SEO thumbnail identifier
 					// consisting of the original filename followed by
 					// 2 md5 hashes. Those two hashes are:
-					// - a hash of the uri so we don't conflict with 
+					// - a hash of the uri so we don't conflict with
 					//   identical filenames in different upload directories
-					// - a hash of the thumbnail parameters so we 
+					// - a hash of the thumbnail parameters so we
 					//   don't conflict with different thumbnails of the same image
 					// Both base 16 hashes get converted to base 36 (10 digits + 26 alphanumeric)
 					// so the filename gets a little bit shorter
-					
+
 					return $basename . '.' . base_convert(md5($this->uri), 16, 36) . '.' . base_convert(md5(implode('', $unifiedParameters)), 16, 36) . '.th';
-					
+
 				}
 
 				/**
 				 * This method returns an unique thumbnail filename (incl. file sufix)
-				 * 
+				 *
 				 * @param array $parameters
-				 * @return string the unique thumbnail filename 
+				 * @return string the unique thumbnail filename
 				 **/
 				function _getUniqueThumbnailName(&$parameters) {
 					$extension = get_option('yapb_phpthumb_output_format');
@@ -446,10 +450,10 @@
 				}
 
 				/**
-				 * This method returns the absolute system path to the 
+				 * This method returns the absolute system path to the
 				 * unique thumbnail defined through the
 				 * given phpThumb parameters
-				 * 
+				 *
 				 * @param array $parameters
 				 * @return string the absolute system path to the thumbnail
 				 **/
@@ -461,7 +465,7 @@
 				 * This method returns the HREF to the
 				 * unique thumbnail defined throught the
 				 * given phpThumb parameters
-				 * 
+				 *
 				 * @param array $parameters
 				 * @return string the href to the thumbnail
 				 **/
@@ -482,8 +486,8 @@
 		/**
 		 * This method returns the width of the thumbnail
 		 * defined through the given phpThumb parameters
-		 * 
-		 * @param array $parameters 
+		 *
+		 * @param array $parameters
 		 * @return number >= 0
 		 */
 		function getThumbnailWidth($parameters = array()) {
@@ -506,9 +510,9 @@
 
 				/**
 				 * Internal method fetches thumbnail dimensions either from previously
-				 * generated cache file or let phpThumb calculate the dimensions with the 
+				 * generated cache file or let phpThumb calculate the dimensions with the
 				 * help of the given parameters
-				 * 
+				 *
 				 * @param array $parameters
 				 * @return assoziative_array containing keys [width, height] mapped to numbers
 				 **/
@@ -666,7 +670,7 @@
 		 * This method generates a transformed image via phpThumb
 		 * Please be aware that this method needs it's time - So try to
 		 * avoid multiple usages in one thread - That could cause timeouts.
-		 * 
+		 *
 		 * @param array $phpThumbConfig provide the array defining the phpThumb operations
 		 * @param YapbLogger $log provide a logging instance for internal logging
 		 * @param boolean $replaceOriginal original image will be replaced with transformed one if set to true
@@ -675,18 +679,18 @@
 		function transform($phpThumbConfig, &$log, $replaceOriginal=false) {
 
 			require_once realpath(dirname(__file__) . '/' . YAPB_PHPTHUMB_DIR . '/phpthumb.class.php');
-			
+
 			$result = false;
 
-			// For this operation, we define an internal log 
+			// For this operation, we define an internal log
 			// Additionally, we define a little log appender and
 			// a little log output function
 
 			$phpthumb = new phpthumb();
-			
+
 			// Set the source filename
 			$phpthumb->setSourceFilename($this->systemFilePath());
-			
+
 			// Wild hack taken from phpThumb.config.php.default:
 			// If we have a wrong DOCUMENT_ROOT setting, we try to
 			// build it on our own. Should work on most configurations,
@@ -699,18 +703,18 @@
 			// thanks to artisan guitars for a test webhost
 
 			$phpthumb->config_allow_src_above_docroot = true;
-			
+
 			// Get some phpThumb configurations
 
-			$phpthumb->config_output_format = 
+			$phpthumb->config_output_format =
 				(is_null(get_option('yapb_phpthumb_output_format')) ||
 				get_option('yapb_phpthumb_output_format') == '')
 					? null
 					: get_option('yapb_phpthumb_output_format');
-			$phpthumb->config_output_interlace = 
-				is_null(get_option('yapb_phpthumb_output_interlace')) || 
+			$phpthumb->config_output_interlace =
+				is_null(get_option('yapb_phpthumb_output_interlace')) ||
 				(get_option('yapb_phpthumb_output_interlace') == '');
-			$phpthumb->config_imagemagick_path = 
+			$phpthumb->config_imagemagick_path =
 				(is_null(get_option('yapb_phpthumb_imagemagick_path')) ||
 				get_option('yapb_phpthumb_imagemagick_path') == '')
 					? null
@@ -724,10 +728,10 @@
 				$key = $explodedToken[0];
 				$value = $explodedToken[1];
 
-				// Direct mapping of the value to the 
+				// Direct mapping of the value to the
 				// according attribute of the phpThumb instance
 				// This is potentially very unsafe and shouldn't
-				// be made available directly to public 
+				// be made available directly to public
 
 				if (strpos($key, '[]') == false) {
 					$phpthumb->$key = $value;
@@ -735,10 +739,10 @@
 					$keyName = substr($key, 0, -2);
 					array_push($phpthumb->$keyName, $value);
 				}
-					
+
 
 			}
-			
+
 			// Now let's have a look at the destination path
 
 			if ($replaceOriginal) {
@@ -754,7 +758,7 @@
 			}
 
 			if ($phpthumb->GenerateThumbnail()) {
-				
+
 				if ($phpthumb->RenderToFile($thumbPath)) {
 
 					if ($replaceOriginal) {
@@ -806,9 +810,9 @@
 		function prepareInnerHtmlParameters($parameters) {
 
 			$result = array();
-			
+
 			if (empty($parameters)) {
-			
+
 				// If no parameters where given, i define
 				// a basic set of them
 
@@ -825,7 +829,7 @@
 				foreach ($parameters as $key => $value) {
 					$result[strtolower($key)] = $value;
 				}
-				
+
 			}
 
 			return $result;
